@@ -14,7 +14,11 @@ PHP 8.1+ WordPress MU-plugin. No settings screen or remote requests.
 
 ## Installation
 
-The repository is named `autoload-express`; the plugin slug is `viktors-autoload-express`.
+Install production dependencies with an optimized autoloader from the repository root:
+
+```bash
+composer install --no-dev -o
+```
 
 Copy this directory, including `vendor`, to `wp-content/mu-plugins/viktors-autoload-express/`.
 Copy [`examples/viktors-autoload-express.php`](examples/viktors-autoload-express.php)
@@ -48,13 +52,11 @@ PHP has no exclusive first-position reservation or registration notification. A 
 
 ## Cache lifecycle
 
-A cache hit requires schema version 3 state and a readable global PHP map returning an array. When present at registration, **no shutdown callback is registered**. Even an explicit call to `shutdown()` immediately returns: no inventory, Reflection, scans, stat calls, locks or writes. New route-specific classes/loaders do not augment the cache on such requests. Existing fallback loaders handle unmapped classes, subject to any individual Composer loader's authoritative setting.
+A cache hit requires schema version 4 state and a readable global PHP map returning an array. When present at registration, **no shutdown callback is registered**. Even an explicit call to `shutdown()` immediately returns: no inventory, Reflection, scans, stat calls, locks or writes. New route-specific classes/loaders do not augment the cache on such requests. Existing fallback loaders handle unmapped classes, subject to any individual Composer loader's authoritative setting.
 
 Without cache, shutdown captures late loaders and builds from all three sources. A nonblocking generation lock prevents simultaneous builders. The builder rechecks whether another request has published a cache before scanning. Exceptions are logged and normal fallback loading continues.
 
 `upgrader_pre_install` invalidates state before WordPress replaces files, clears the current global map, and prevents that request from generating a replacement. The next request rebuilds. Plugin activation/deactivation and theme switches also invalidate state and clear the in-memory global map. The `activate_plugin`, `deactivate_plugin` and `switch_theme` actions are supplemented by add/update hooks for the `active_plugins` option and the network `active_sitewide_plugins` option, covering silent changes and first-time option creation. Invalidation is idempotent and the changing request never rebuilds; the next ordinary cache-miss request generates the replacement. For manual deployments or scan-list changes, delete `state.json` before serving the new configuration. No age-based expiry or source-change probing occurs.
-
-Generation temporarily enters WP_CONTENT_DIR because an FPM working directory of `/` may be prohibited by open_basedir. It restores the previous directory only when allowed by the restriction.
 
 ## Cache files and OPcache
 
@@ -73,8 +75,8 @@ Names are compared case-insensitively. Different plugin owners declaring one nam
 ## Verification
 
 ```bash
-rtk php8.5 tests/integration.php
-rtk php8.5 tests/integration.php --restricted-cwd
+php8.5 tests/integration.php
+php8.5 tests/integration.php --restricted-cwd
 ```
 
 Tests cover manual scans (classes/interfaces/traits/enums), global loading, case-insensitive lookup, loaded collision winners, Composer directory precedence, scoped loaders, PSR-0/fallback support, authoritative application, first-position recovery, no shutdown hook on cache hits, zero writes/hashes on cache-hit shutdown, suppression of incremental learning and late-loader builds, cache regeneration, update invalidation, plugin activation/deactivation, theme switches and silent/network option changes. These are local fixture tests, not a full WordPress staging validation.
