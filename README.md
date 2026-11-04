@@ -38,7 +38,7 @@ The PHP worker needs write access to that cache directory. Untrusted users must 
 2. Every registered SPL callback is inventoried. Standard and scoped Composer loaders expose explicit classmaps, PSR-4/PSR-0 prefixes and fallback directories. Composer resolves scanned candidates using the original directory precedence. Arbitrary callbacks do not expose discoverable rules; use the manual list for them.
 3. Reflection captures already declared user classes, interfaces, traits and enums with real source files. Internal/anonymous/eval declarations and aliases are excluded. An already loaded declaration wins a collision in the global map.
 
-Composer's official `composer/class-map-generator` finds declarations without executing scanned files. Runtime uses one case-insensitive lookup into a shared map, followed by `require_once`. Existing loaders remain registered as fallbacks. Map misses do not stop the SPL chain; this is not globally authoritative and cannot suppress repeated missing-class lookups such as the YITH singleton bug.
+Composer's official `composer/class-map-generator` finds declarations without executing scanned files. Runtime uses one case-insensitive lookup into a shared map, followed by `require_once`. Existing loaders remain registered as fallbacks. Map misses do not stop the SPL chain; this is not globally authoritative and cannot suppress repeated missing-class lookups.
 
 Loaded files can have side effects, conditional declarations or activation requirements. A declaration found by a scanner is not proof it is safe to load early. Limit manual directories accordingly and validate on staging before deployment.
 

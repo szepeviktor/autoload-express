@@ -1,5 +1,5 @@
 {
-  "name": "roboviktor/autoload-classmap",
+  "name": "szepeviktor/autoload-express",
   "type": "wordpress-muplugin",
   "require": {
     "php": ">=8.1",
