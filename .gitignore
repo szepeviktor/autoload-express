@@ -1,0 +1,33 @@
+# Installed dependencies (reproducible from composer.lock).
+/vendor/
+
+# Generated runtime cache and build artifacts.
+/cache/
+/dist/
+/*.zip
+*.log
+
+# Local environment and editor settings.
+.env
+.env.*
+!.env.example
+/.idea/
+/.vscode/
+.DS_Store
+
+# Site-specific investigation and benchmark artifacts.
+/autoload-optimization-*.json
+/benchmark-*.md
+/collisions-*.json
+/collisions-*.md
+/inventory-describe-benchmark-*.json
+/inventory-describe-benchmark-*.md
+/optimization-40ms-*.md
+/readstate-benchmark-*.json
+/readstate-benchmark-*.md
+/yoast-missing-classmap-files-issue.txt
+
+# Experimental instrumentation copies; keep integration.php and probes.php.
+/tests/Plugin-diagnostics-ab.php
+/tests/Plugin-readstate-measure.php
+/tests/measure-autoloaders-reprepend.php
