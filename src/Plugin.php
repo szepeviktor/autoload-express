@@ -246,7 +246,7 @@ final class Plugin
     {
         $previous = $this->readState();
         // Keep maps learned on other routes; only missing/changed loaders scan.
-        $state = $previous ?: ['version' => 3, 'loaders' => [], 'collisions' => []];
+        $state = $previous ?: ['version' => 4, 'loaders' => [], 'collisions' => []];
         $state['inventory'] = $this->inventory;
         $union = [];
         $occurrences = [];
@@ -324,6 +324,7 @@ final class Plugin
             }
         }
         $canonical = [];
+        $union = $this->withoutInternalTypes($union);
         foreach (array_keys($union) as $class) {
             $normalized = strtolower($class);
             if (isset($canonical[$normalized])) {
@@ -348,9 +349,21 @@ final class Plugin
             $occurrences[strtolower($class)][$path] = $class;
         }
         foreach ($occurrences as $normalized => $paths) {
+            if ($this->isInternalType($normalized)) {
+                continue;
+            }
+            // Composer generates plugin-specific InstalledVersions copies, so differing contents are expected.
+            if ($normalized === 'composer\\installedversions') {
+                continue;
+            }
             $owners = [];
             foreach ($paths as $path => $class) {
                 $owner = $this->owner($path);
+                // FIXME: Yoast bundles Composer installers that are irrelevant to runtime collisions.
+                if ($owner === 'wordpress-seo' && str_starts_with($normalized, 'composer\\installers\\')) {
+                    unset($paths[$path]);
+                    continue;
+                }
                 if ($owner !== null) {
                     $owners[$owner][] = $path;
                 }
@@ -364,9 +377,9 @@ final class Plugin
             }
             $fingerprint = hash('sha256', serialize($hashes));
             $state['collisions'][$normalized] = $fingerprint;
-            if (($previous['collisions'][$normalized] ?? null) !== $fingerprint) {
-                $level = count(array_unique(array_values($hashes))) > 1 ? 'WARNING' : 'INFO';
-                $this->log($level, 'Duplicate ' . reset($paths) . ': ' . json_encode($owners, JSON_UNESCAPED_SLASHES));
+            if (($previous['collisions'][$normalized] ?? null) !== $fingerprint
+                && count(array_unique(array_values($hashes))) > 1) {
+                $this->log('WARNING', 'Duplicate ' . reset($paths) . ': ' . json_encode($owners, JSON_UNESCAPED_SLASHES));
             }
         }
         ksort($union);
@@ -456,7 +469,20 @@ final class Plugin
                 }
             }
         }
-        return [$map, $complete];
+        $occurrences = array_filter($occurrences, fn (string $class): bool => !$this->isInternalType($class), ARRAY_FILTER_USE_KEY);
+        return [$this->withoutInternalTypes($map), $complete];
+    }
+
+    private function withoutInternalTypes(array $map): array
+    {
+        return array_filter($map, fn (string $class): bool => !$this->isInternalType($class), ARRAY_FILTER_USE_KEY);
+    }
+
+    private function isInternalType(string $class): bool
+    {
+        // Inspect only existing types; probing polyfills must never trigger autoload.
+        return (class_exists($class, false) || interface_exists($class, false) || trait_exists($class, false))
+            && (new ReflectionClass($class))->isInternal();
     }
 
     private function owner(string $path): ?string
@@ -527,7 +553,7 @@ final class Plugin
                 throw new \RuntimeException('Cannot read state');
             }
             $state = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
-            return is_array($state) && ($state['version'] ?? null) === 3 ? $state : [];
+            return is_array($state) && ($state['version'] ?? null) === 4 ? $state : [];
         } catch (Throwable $error) {
             $this->log('WARNING', 'Cannot read ' . $path . ': ' . $error->getMessage());
             return [];
