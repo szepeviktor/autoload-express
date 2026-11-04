@@ -1,6 +1,7 @@
 <?php
 /**
- * Plugin Name: Runtime Autoload Classmap
+ * Plugin Name: Viktor's Autoload Express
+ * Text Domain: viktors-autoload-express
  * Description: Builds Composer classmaps at shutdown and applies them on subsequent requests.
  * Requires PHP: 8.1
  */

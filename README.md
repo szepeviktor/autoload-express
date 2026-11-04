@@ -1,16 +1,15 @@
-# Runtime Autoload Classmap
+# Viktor's Autoload Express
 
 PHP 8.1+ WordPress MU-plugin. No settings screen or remote requests.
 
 ## Installation
 
-Copy this directory, including `vendor`, to `wp-content/mu-plugins/autoload-classmap/`.
-Create `wp-content/mu-plugins/runtime-autoload-classmap.php`:
+The repository is named `autoload-express`; the plugin slug is `viktors-autoload-express`.
 
-```php
-<?php
-require_once __DIR__ . '/autoload-classmap/autoload-classmap.php';
-```
+Copy this directory, including `vendor`, to `wp-content/mu-plugins/viktors-autoload-express/`.
+Copy [`examples/viktors-autoload-express.php`](examples/viktors-autoload-express.php)
+to `wp-content/mu-plugins/viktors-autoload-express.php`. This MU bootstrap loads
+the plugin from the `viktors-autoload-express` subdirectory.
 
 The constructor defines the paths:
 
