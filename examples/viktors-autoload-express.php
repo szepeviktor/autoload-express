@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: Viktor's Autoload Express
+ * Version: 1.0.1
  * Description: Loads the plugin from the viktors-autoload-express subdirectory.
  * Requires PHP: 8.1
  */
