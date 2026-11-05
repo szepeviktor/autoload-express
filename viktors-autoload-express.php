@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-if (defined('WP_INSTALLING') && WP_INSTALLING) {
+if (wp_installing()) {
     return;
 }
 
